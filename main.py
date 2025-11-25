@@ -80,18 +80,33 @@ if __name__ == "__main__":
         ),
     )
 
+    
+
     # Create a population ready for evolutionary hyper-parameter optimisation
+    # pop: list[MATD3] = create_population(
+    #     INIT_HP["ALGO"],
+    #     observation_spaces,
+    #     action_spaces,
+    #     NET_CONFIG,
+    #     INIT_HP,
+    #     hp_config=hp_config,
+    #     population_size=INIT_HP["POPULATION_SIZE"],
+    #     num_envs=num_envs,
+    #     device=device,
+    # )
+
     pop: list[MATD3] = create_population(
-        INIT_HP["ALGO"],
-        observation_spaces,
-        action_spaces,
-        NET_CONFIG,
-        INIT_HP,
+        algo=INIT_HP["ALGO"],
+        net_config=NET_CONFIG,
+        INIT_HP=INIT_HP,
+        observation_space=observation_spaces,
+        action_space=action_spaces,
         hp_config=hp_config,
         population_size=INIT_HP["POPULATION_SIZE"],
         num_envs=num_envs,
         device=device,
     )
+
 
     # Configure the multi-agent replay buffer
     field_names = ["obs", "action", "reward", "next_obs", "done"]

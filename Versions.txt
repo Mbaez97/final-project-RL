@@ -1,0 +1,256 @@
+Versions
+------------------------------------------------------------------------
+V1: baseline (main.py) ./models/MATD3
+------------------------------------------------------------------------
+pop: list[MATD3] = create_population(
+        algo=INIT_HP["ALGO"],
+        net_config=NET_CONFIG,
+        INIT_HP=INIT_HP,
+        observation_space=observation_spaces,
+        action_space=action_spaces,
+        hp_config=hp_config,
+        population_size=INIT_HP["POPULATION_SIZE"],
+        num_envs=num_envs,
+        device=device,
+    )
+------------------------------------------------------------------------
+V2: (main_V2.py) ./models/MATD3_V2
+------------------------------------------------------------------------
+NET_CONFIG = {
+        "latent_dim": 64,
+        "encoder_config": {
+            "hidden_size": [64, 64],  # Actor
+        },
+        "head_config": {
+            "hidden_size": [64, 64],  # Critic
+        },
+    } 
+    
+    INIT_HP = {
+    "POPULATION_SIZE": 6,     # a bit larger pop for PBT
+    "ALGO": "MATD3",
+    "BATCH_SIZE": 128,
+    "O_U_NOISE": True,
+    "EXPL_NOISE": 0.2,        # more exploration
+    "MEAN_NOISE": 0.0,
+    "THETA": 0.15,
+    "DT": 0.01,
+    "LR_ACTOR": 3e-4,
+    "LR_CRITIC": 3e-4,
+    "GAMMA": 0.99,            # longer horizon helps navigation
+    "MEMORY_SIZE": 100000,
+    "LEARN_STEP": 75,         # learn more often
+    "TAU": 0.005,             # softer target updates (TD3-style)
+    "POLICY_FREQ": 2,         # update policy every critic update
+    }
+
+mutations = Mutations(
+        no_mutation=0.3,
+        architecture=0.1,
+        new_layer_prob=0.1,
+        parameters=0.3,
+        activation=0.0,
+        rl_hp=0.2,
+        mutation_sd=0.05,
+        rand_seed=1,
+        device=device,  
+    )
+
+------------------------------------------------------------------------
+V3: (main_V3.py) ./models/MATD3_V3
+------------------------------------------------------------------------
+ NET_CONFIG = {
+         "latent_dim": 64,
+         "encoder_config": {
+             "hidden_size": [64, 64],  # Actor
+         },
+         "head_config": {
+             "hidden_size": [64, 64],  # Critic
+         },
+     }
+
+INIT_HP = {
+    "POPULATION_SIZE": 6,     # a bit larger pop for PBT
+    "ALGO": "MATD3",
+    "BATCH_SIZE": 128,
+    "O_U_NOISE": True,
+    "EXPL_NOISE": 0.1,        # reduce the exploration agains v2
+    "MEAN_NOISE": 0.0,
+    "THETA": 0.15,
+    "DT": 0.01,
+    "LR_ACTOR": 3e-4,
+    "LR_CRITIC": 3e-4,
+    "GAMMA": 0.95,
+    "MEMORY_SIZE": 150000,
+    "LEARN_STEP": 75,         # learn more often
+    "TAU": 0.005,             # softer target updates (TD3-style)
+    "POLICY_FREQ": 1,         # reduce agains v2
+    }
+
+    EXPL_NOISE_START = INIT_HP["EXPL_NOISE"]   
+    EXPL_NOISE_END = 0.02
+    EXPL_NOISE_DECAY_STEPS = 200_000
+    
+    def get_expl_noise(total_steps):
+        """Linear decay from EXPL_NOISE_START → EXPL_NOISE_END"""
+        ratio = min(total_steps / EXPL_NOISE_DECAY_STEPS, 1.0)
+        return EXPL_NOISE_START + ratio * (EXPL_NOISE_END - EXPL_NOISE_START)
+        
+    mutations = Mutations(
+    no_mutation=0.5,       # more likely to keep good params
+    architecture=0.05,     # fewer random layers
+    new_layer_prob=0.05,
+    parameters=0.2,        # safer
+    activation=0.0,
+    rl_hp=0.1,             # less hyperparam chaos
+    mutation_sd=0.03,      # smaller jumps
+    rand_seed=1,
+    device=device,
+    )
+    
+    for idx_step in range(evo_steps // num_envs):
+                # !--- Exploration noise linear decay ---
+                expl_noise = get_expl_noise(total_steps)
+                agent.EXPL_NOISE = expl_noise
+                #! --------------------------------------
+                action, raw_action = agent.get_action(obs=obs, infos=info) 
+                next_obs, reward, termination, truncation, info = env.step(action) 
+                scores += np.sum(np.array(list(reward.values())).transpose(), axis=-1)
+                total_steps += num_envs
+                steps += num_envs
+------------------------------------------------------------------------
+V4: (main_V4.py) ./models/MATD4_V4
+------------------------------------------------------------------------
+NET_CONFIG = {
+        "latent_dim": 128,
+        "encoder_config": {"hidden_size": [128, 128]},
+        "head_config": {"hidden_size": [128, 128]},
+    }   
+
+INIT_HP = {
+    "POPULATION_SIZE": 6,     # a bit larger pop for PBT
+    "ALGO": "MATD3",
+    "BATCH_SIZE": 128,
+    "O_U_NOISE": True,
+    "EXPL_NOISE": 0.1,        # reduce the exploration agains v2
+    "MEAN_NOISE": 0.0,
+    "THETA": 0.15,
+    "DT": 0.01,
+    "LR_ACTOR": 3e-4,
+    "LR_CRITIC": 3e-
+    "GAMMA": 0.99,            
+    "MEMORY_SIZE": 150000,
+    "LEARN_STEP": 75,         # learn more often
+    "TAU": 0.005,             # softer target updates (TD3-style)
+    "POLICY_FREQ": 1,         # reduce agains v2
+    }
+
+    # EXPL_NOISE_START = INIT_HP["EXPL_NOISE"]   
+    # EXPL_NOISE_END = 0.01
+    # EXPL_NOISE_DECAY_STEPS = 200_000
+    
+    def get_expl_noise(total_steps):
+        """Linear decay from EXPL_NOISE_START → EXPL_NOISE_END"""
+        ratio = min(total_steps / EXPL_NOISE_DECAY_STEPS, 1.0)
+        return EXPL_NOISE_START + ratio * (EXPL_NOISE_END - EXPL_NOISE_START)
+        
+  hp_config = HyperparameterConfig(
+        lr_actor=RLParameter(min=1e-4, max=1e-2),
+        lr_critic=RLParameter(min=1e-4, max=1e-2),
+        batch_size=RLParameter(min=8, max=512, dtype=int),
+        learn_step=RLParameter(min=20, max=200, dtype=int, grow_factor=1.5, shrink_factor=0.75
+        ),
+    )
+
+mutations = Mutations(
+    no_mutation=0.5,       # more likely to keep good params
+    architecture=0.05,     # fewer random layers
+    new_layer_prob=0.05,
+    parameters=0.2,        # safer
+    activation=0.0,
+    rl_hp=0.1,             # less hyperparam chaos
+    mutation_sd=0.03,      # smaller jumps
+    rand_seed=1,
+    device=device,
+    )
+    
+ for idx_step in range(evo_steps // num_envs):
+                # !--- Exploration noise linear decay ---
+                expl_noise = get_expl_noise(total_steps)
+                agent.EXPL_NOISE = expl_noise
+                #! --------------------------------------
+                action, raw_action = agent.get_action(obs=obs, infos=info) 
+                next_obs, reward, termination, truncation, info = env.step(action) 
+                scores += np.sum(np.array(list(reward.values())).transpose(), axis=-1)
+                total_steps += num_envs
+                steps += num_envs
+------------------------------------------------------------------------
+V5: (main_MADDPG.py) ./models/MADDPG_V1
+------------------------------------------------------------------------
+NET_CONFIG = {
+        "latent_dim": 128,
+        "encoder_config": {"hidden_size": [128, 128]},
+        "head_config": {"hidden_size": [128, 128]},
+    }   
+
+    INIT_HP = {
+    "POPULATION_SIZE": 6,     # a bit larger pop for PBT
+    "ALGO": "MADDPG",
+    "BATCH_SIZE": 128,
+    "O_U_NOISE": True,
+    "EXPL_NOISE": 0.1,        # reduce the exploration agains v2
+    "MEAN_NOISE": 0.0,
+    "THETA": 0.15,
+    "DT": 0.01,
+    "LR_ACTOR": 3e-4,
+    "LR_CRITIC": 3e-4,
+    "GAMMA": 0.99,            
+    "MEMORY_SIZE": 150000,
+    "LEARN_STEP": 75,         # learn more often
+    "TAU": 0.005,             # softer target updates (TD3-style)
+    "POLICY_FREQ": 1,         # reduce agains v2
+    }
+
+    # EXPL_NOISE_START = INIT_HP["EXPL_NOISE"]   # 0.1
+    # EXPL_NOISE_END = 0.02
+    # EXPL_NOISE_DECAY_STEPS = 200_000
+
+    EXPL_NOISE_START = INIT_HP["EXPL_NOISE"]   # 0.1
+    EXPL_NOISE_END = 0.01
+    EXPL_NOISE_DECAY_STEPS = 100_000
+
+    
+def get_expl_noise(total_steps):
+        """Linear decay from EXPL_NOISE_START → EXPL_NOISE_END"""
+        ratio = min(total_steps / EXPL_NOISE_DECAY_STEPS, 1.0)
+        return EXPL_NOISE_START + ratio * (EXPL_NOISE_END - EXPL_NOISE_START)
+        
+hp_config = HyperparameterConfig(
+        lr_actor=RLParameter(min=1e-4, max=5e-4),
+        lr_critic=RLParameter(min=1e-4, max=5e-4),
+        batch_size=RLParameter(min=64, max=256, dtype=int),
+        learn_step=RLParameter(min=40, max=120, dtype=int, grow_factor=1.2, shrink_factor=0.8),
+        )
+mutations = Mutations(
+    no_mutation=0.5,       # more likely to keep good params
+    architecture=0.05,     # fewer random layers
+    new_layer_prob=0.05,
+    parameters=0.2,        # safer
+    activation=0.0,
+    rl_hp=0.1,             # less hyperparam chaos
+    mutation_sd=0.03,      # smaller jumps
+    rand_seed=1,
+    device=device,
+    )
+    
+for idx_step in range(evo_steps // num_envs):
+                # !--- Exploration noise linear decay ---
+                expl_noise = get_expl_noise(total_steps)
+                agent.EXPL_NOISE = expl_noise
+                #! --------------------------------------
+                action, raw_action = agent.get_action(obs=obs, infos=info) 
+                next_obs, reward, termination, truncation, info = env.step(action) 
+                scores += np.sum(np.array(list(reward.values())).transpose(), axis=-1)
+                total_steps += num_envs
+                steps += num_envs
+------------------------------------------------------------------------

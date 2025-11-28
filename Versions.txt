@@ -254,3 +254,79 @@ for idx_step in range(evo_steps // num_envs):
                 total_steps += num_envs
                 steps += num_envs
 ------------------------------------------------------------------------
+V6: (main_IPPO.py) ./models/IPPO_V1
+------------------------------------------------------------------------
+NET_CONFIG = {
+        "latent_dim": 128,
+        "encoder_config": {"hidden_size": [128, 128]},
+        "head_config": {"hidden_size": [128, 128]},
+    }   
+
+    INIT_HP = {
+        "POPULATION_SIZE": 4,     
+        "ALGO": "IPPO",
+        "BATCH_SIZE": 512, 
+        "LEARN_STEP": 2048, 
+        "LR": 3e-4,
+        "GAMMA": 0.99,
+        "GAE_LAMBDA": 0.95,         
+        "CLIP_EPS": 0.2,          
+        "ENT_COEF": 0.01,                 
+        "VF_COEF": 0.5,
+        "MAX_GRAD_NORM": 0.5,
+        "MEMORY_SIZE": 10000, 
+    }
+
+    hp_config = HyperparameterConfig(
+        lr=RLParameter(min=1e-5, max=1e-3), 
+        batch_size=RLParameter(min=128, max=1024, dtype=int),
+        learn_step=RLParameter(min=1024, max=4096, dtype=int, grow_factor=1.2, shrink_factor=0.8),
+    )
+
+    mutations = Mutations(
+        no_mutation=0.6, 
+        architecture=0.1,  
+        new_layer_prob=0.1,
+        parameters=0.1, 
+        activation=0.0,
+        rl_hp=0.1,  
+        mutation_sd=0.05, 
+        rand_seed=1,
+        device=device,
+    )
+
+    steps_to_rollout = agent.learn_step // num_envs
+
+            for idx_step in range(steps_to_rollout):
+                
+                action, log_prob, _, value = agent.get_action(obs=obs, infos=info)
+                
+                action = to_cpu_numpy(action)
+                log_prob = to_cpu_numpy(log_prob)
+                value = to_cpu_numpy(value)
+
+                for agent_id in env.agents:
+                    mb_obs[agent_id].append(obs[agent_id])
+                    mb_actions[agent_id].append(action[agent_id])
+                    mb_log_probs[agent_id].append(log_prob[agent_id])
+                    mb_values[agent_id].append(value[agent_id])
+
+                clipped_action = {aid: np.clip(act, 0, 1) for aid, act in action.items()}
+                next_obs, reward, termination, truncation, info = env.step(clipped_action)
+                
+                dones_step = {}
+                for agent_id in termination:
+                    t_done = termination[agent_id]
+                    t_trunc = truncation[agent_id]
+                    dones_step[agent_id] = np.logical_or(t_done, t_trunc).astype(float)
+
+                for agent_id in env.agents:
+                    mb_rewards[agent_id].append(reward[agent_id])
+                    mb_dones[agent_id].append(dones_step[agent_id])
+
+                scores += np.sum(np.array(list(reward.values())).transpose(), axis=-1)
+                total_steps += num_envs
+                steps += num_envs
+
+                obs = next_obs
+------------------------------------------------------------------------

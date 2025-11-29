@@ -34,15 +34,15 @@ The Speaker-Listener environment consists of two agents with distinct roles:
 
 ## Algorithms
 
-### MATD3 (Multi-Agent Twin Delayed DDPG)
+### 1. MATD3 (Multi-Agent Twin Delayed DDPG)
 
 MATD3 is a multi-agent extension of the TD3 (Twin Delayed Deep Deterministic Policy Gradient) algorithm, which in turn is an improvement on DDPG. It is an off-policy algorithm that uses a replay buffer for learning from past experiences.
 
-### MADDPG (Multi-Agent Deep Deterministic Policy Gradient)
+### 2. MADDPG (Multi-Agent Deep Deterministic Policy Gradient)
 
 MADDPG is an extension of the DDPG algorithm to multi-agent environments using centralized training and decentralized execution (CTDE). It is an off-policy algorithm, using a replay buffer to store joint transitions. 
 
-### IPPO (Independent Proximal Policy Optimization)
+### 3. IPPO (Independent Proximal Policy Optimization)
 
 IPPO is a multi-agent approach where each agent uses the PPO algorithm independently, treating other agents as part of the environment. PPO is an on-policy algorithm that uses clipping of the objective function to maintain stable policy updates. 
 

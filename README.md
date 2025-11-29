@@ -26,9 +26,9 @@ This project implements a multi-agent reinforcement learning environment based o
 
 The Speaker-Listener environment consists of two agents with distinct roles:
 
-Speaker: Speaks but cannot move.
+- Speaker: Speaks but cannot move.
 
-Listener: Listens to the Speaker's messages and needs to navigate to the target.
+- Listener: Listens to the Speaker's messages and needs to navigate to the target.
 
 ---
 

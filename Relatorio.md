@@ -144,9 +144,13 @@ The aggregated training curves in all_training_scores.png reveal clear differenc
 
 The IPPO model rises above the target score earlier than any other algorithm, showing a steep and consistent learning curve. This rapid progression is likely due to the on-policy nature of PPO, which updates policies using fresh trajectories and significantly reduces the instability caused by stale replay-buffer data. Because each agent learns independently, IPPO can adjust more rapidly to changes in the environment, making it more responsive in the early stages of training. This explains why IPPO quickly surpasses the −60 threshold and maintains strong performance afterward.
 
+![My Image](plots/IPPO_V1_training_scores.png)
+
 ### MATD3_V4 obtains the best overall score (−18.33)
 
 Although IPPO learns fastest, MATD3_V4 ultimately achieves the highest performance, reaching a maximum score of −18.33, the best result of all models. This version benefits from a larger network architecture (128-dim layers) combined with online hyperparameter adaptation through PBT, which allows the algorithm to gradually refine learning rates and update rules as training evolves. Despite being derived from MATD3, V4 demonstrates that increasing model capacity and enabling dynamic hyperparameter evolution significantly boosts performance, making it the most effective architecture in the long run.
+
+![My Image](plots/MATD3_V4_training_scores.png)
 
 ---
 

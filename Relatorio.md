@@ -137,6 +137,9 @@ To analyze and compare performance across versions, we use the training-plot.ipy
 
 The aggregated training curves in all_training_scores.png reveal clear differences in learning speed, stability, and final performance across the six tested algorithms. When comparing all experiments, four models successfully surpassed the target score of −60 closer to 100k steps, without ever again declining in performance, indicating effective learning and coordination in the environment. Notably, three of these models reach the target before 50k evolution steps, demonstrating strong early convergence and robust optimization.
 
+![My Image](plots/all_training_scores.png)
+
+
 ### IPPO_V1 achieves the fastest improvement
 
 The IPPO model rises above the target score earlier than any other algorithm, showing a steep and consistent learning curve. This rapid progression is likely due to the on-policy nature of PPO, which updates policies using fresh trajectories and significantly reduces the instability caused by stale replay-buffer data. Because each agent learns independently, IPPO can adjust more rapidly to changes in the environment, making it more responsive in the early stages of training. This explains why IPPO quickly surpasses the −60 threshold and maintains strong performance afterward.

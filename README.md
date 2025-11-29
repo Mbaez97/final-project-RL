@@ -157,6 +157,6 @@ Although IPPO learns fastest, MATD3_V4 ultimately achieves the highest performan
 
 Four models surpass the target score, and three achieve this before 50k steps, showing strong convergence behavior.
 
-IPPO is the fastest learner, likely due to its responsive on-policy updates and independent-agent structure.
+- IPPO is the fastest learner, likely due to its responsive on-policy updates and independent-agent structure.
 
-MATD3_V4 is the best-performing model overall, delivering the highest final score across all experiments.
+- MATD3_V4 is the best-performing model overall, delivering the highest final score across all experiments.

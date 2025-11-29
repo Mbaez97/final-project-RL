@@ -61,65 +61,64 @@ Baseline implementation using MATD3 with the original network and hyperparameter
 This version tests whether a smaller network with more aggressive exploration and slightly different update schedule improves coordination.
 Uses a more compact network:
 
-Architecture: latent_dim = 64 with two hidden layers of 64 units for both actor and critic.
+- Architecture: latent_dim = 64 with two hidden layers of 64 units for both actor and critic.
 
-RL hyperparameters: stronger exploration (EXPL_NOISE = 0.2), higher discount factor (GAMMA = 0.99), smaller replay buffer (MEMORY_SIZE = 100000), and POLICY_FREQ = 2 (policy updated less often than critic).
+- RL hyperparameters: stronger exploration (EXPL_NOISE = 0.2), higher discount factor (GAMMA = 0.99), smaller replay buffer (MEMORY_SIZE = 100000), and POLICY_FREQ = 2 (policy updated less often than critic).
 
-PBT mutations: moderate probability of mutating architecture, parameters, and RL hyperparameters, encouraging exploration of both weights and hyperparameters.
+- PBT mutations: moderate probability of mutating architecture, parameters, and RL hyperparameters, encouraging exploration of both weights and hyperparameters.
 
 ### V3 – MATD3 (main_V3.py/models/MATD3_V3)
 
 This version focuses on stabilizing learning, using decaying exploration and more conservative evolutionary changes to fine-tune around good solutions.
 Keeps the same architecture as V2 (64-dim latent, 64×64 MLPs) but refines the learning dynamics:
 
-Exploration schedule: starts from EXPL_NOISE = 0.1 and linearly decays to 0.02 over 200,000 steps (get_expl_noise), updated inside the training loop for each evolution step.
+- Exploration schedule: starts from EXPL_NOISE = 0.1 and linearly decays to 0.02 over 200,000 steps (get_expl_noise), updated inside the training loop for each evolution step.
 
-RL hyperparameters: slightly shorter horizon (GAMMA = 0.95), larger replay buffer (MEMORY_SIZE = 150000), and POLICY_FREQ = 1 (policy updated at every critic update).
+- RL hyperparameters: slightly shorter horizon (GAMMA = 0.95), larger replay buffer (MEMORY_SIZE = 150000), and POLICY_FREQ = 1 (policy updated at every critic update).
 
-PBT mutations: higher probability of no mutation and smaller mutation standard deviation (mutation_sd = 0.03), with reduced architecture and RL-hp changes.
+- PBT mutations: higher probability of no mutation and smaller mutation standard deviation (mutation_sd = 0.03), with reduced architecture and RL-hp changes.
 
 ### V4 – MATD3 (main_V4.py/models/MATD4_V4)
 
 V4 therefore tests whether a higher-capacity MATD3 combined with online hyperparameter adaptation can outperform the smaller architectures.
 In this version, MATD3 is kept as the underlying algorithm but model capacity and hyperparameter search are extended:
 
-Architecture: larger network with latent_dim = 128 and 128×128 layers for actor and critic.
+- Architecture: larger network with latent_dim = 128 and 128×128 layers for actor and critic.
 
-RL hyperparameters: similar MATD3 settings (EXPL_NOISE ≈ 0.1, GAMMA = 0.99, MEMORY_SIZE = 150000, POLICY_FREQ = 1).
+- RL hyperparameters: similar MATD3 settings (EXPL_NOISE ≈ 0.1, GAMMA = 0.99, MEMORY_SIZE = 150000, POLICY_FREQ = 1).
 
-Hyperparameter optimization: introduces a HyperparameterConfig with ranges for lr_actor, lr_critic, batch_size, and learn_step (via RLParameter), enabling PBT to adapt learning rates and update frequency online.
+- Hyperparameter optimization: introduces a HyperparameterConfig with ranges for lr_actor, lr_critic, batch_size, and learn_step (via RLParameter), enabling PBT to adapt learning rates and update frequency online.
 
 Mutations: same conservative mutation scheme as V3, but now also mutating these RL hyperparameters within specified bounds.
 
 ### V5 – MADDPG (main_MADDPG.py/models/MADDPG_V1)
 
-This version evaluates whether using a centralized-critic algorithm (MADDPG) with similar capacity and evolutionary tuning can improve coordination compared to MATD3.
-Here the algorithm is switched from MATD3 to MADDPG, while keeping a similar network size to V4:
+This version evaluates whether using a centralized-critic algorithm (MADDPG) with similar capacity and evolutionary tuning can improve coordination compared to MATD3. Here the algorithm is switched from MATD3 to MADDPG, while keeping a similar network size to V4:
 
-Architecture: latent_dim = 128 with 128×128 layers.
+- Architecture: latent_dim = 128 with 128×128 layers.
 
-RL hyperparameters: typical DDPG-style settings (O-U noise, EXPL_NOISE = 0.1, GAMMA = 0.99, MEMORY_SIZE = 150000, POLICY_FREQ = 1).
+- RL hyperparameters: typical DDPG-style settings (O-U noise, EXPL_NOISE = 0.1, GAMMA = 0.99, MEMORY_SIZE = 150000, POLICY_FREQ = 1).
 
-Exploration schedule: linear decay of EXPL_NOISE from 0.1 to 0.01 over 100,000 steps, updated inside the training loop.
+- Exploration schedule: linear decay of EXPL_NOISE from 0.1 to 0.01 over 100,000 steps, updated inside the training loop.
 
-Hyperparameter optimization: HyperparameterConfig with relatively narrow ranges for actor/critic learning rates, batch size and learn_step, adjusted via PBT.
+- Hyperparameter optimization: HyperparameterConfig with relatively narrow ranges for actor/critic learning rates, batch size and learn_step, adjusted via PBT.
 
-Mutations: same conservative mutation settings as V3–V4.
+- Mutations: same conservative mutation settings as V3–V4.
 
 ### V6 – IPPO (main_IPPO.py/models/IPPO_V1)
 
 This version explores how an on-policy, clipping-based method (IPPO) with shared architecture and PBT compares to off-policy algorithms in the same environment.
 Finally, V6 replaces value-based deterministic methods with on-policy IPPO:
 
-Architecture: same 128-dim / 128×128 network as V4–V5.
+- Architecture: same 128-dim / 128×128 network as V4–V5.
 
-RL hyperparameters (PPO-style): large batch size (BATCH_SIZE = 512), rollout length LEARN_STEP = 2048, GAMMA = 0.99, GAE_LAMBDA = 0.95, clipping parameter (CLIP_EPS = 0.2), entropy coefficient (ENT_COEF = 0.01), value loss coefficient (VF_COEF = 0.5), and gradient clipping (MAX_GRAD_NORM = 0.5).
+- RL hyperparameters (PPO-style): large batch size (BATCH_SIZE = 512), rollout length LEARN_STEP = 2048, GAMMA = 0.99, GAE_LAMBDA = 0.95, clipping parameter (CLIP_EPS = 0.2), entropy coefficient (ENT_COEF = 0.01), value loss coefficient (VF_COEF = 0.5), and gradient clipping (MAX_GRAD_NORM = 0.5).
 
-Hyperparameter optimization: PBT explores lr, batch size, and learn_step through HyperparameterConfig.
+- Hyperparameter optimization: PBT explores lr, batch size, and learn_step through HyperparameterConfig.
 
-Rollout collection: for each PPO update, trajectories are collected for all agents (observations, actions, log-probs, values, rewards, dones) over steps_to_rollout = learn_step / num_envs, and then used for on-policy updates.
+- Rollout collection: for each PPO update, trajectories are collected for all agents (observations, actions, log-probs, values, rewards, dones) over steps_to_rollout = learn_step / num_envs, and then used for on-policy updates.
 
-Mutations: slightly higher no mutation (0.6) and moderate changes to architecture, parameters, and RL hyperparameters, tuned for PPO.
+- Mutations: slightly higher no mutation (0.6) and moderate changes to architecture, parameters, and RL hyperparameters, tuned for PPO.
 
 Whatever version details and specific settings are used are described in versions.txt to guarantee reproducibility of the version.
 
